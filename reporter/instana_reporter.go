@@ -2,12 +2,8 @@ package reporter
 
 import (
 	"context"
-	"os/exec"
-	"strconv"
-	"strings"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/ebpf-profiler/libpf"
 )
 
@@ -83,28 +79,4 @@ func (r *InstanaReporter) ReportTraceEvent(trace *libpf.Trace,
 		return
 	}
 
-	cmd := exec.Command("ps", "-p", strconv.Itoa(int(pid)), "-o", "comm=")
-	output, err := cmd.Output()
-	if err == nil {
-		if strings.TrimSpace(string(output)) == "php-fpm" {
-			//lets get the master php-fpm
-			cmd = exec.Command("ps", "-p", strconv.Itoa(int(pid)), "-o", "ppid=")
-			ppid, err := cmd.Output()
-			if err == nil {
-				cmd = exec.Command("ps", "-p", strings.TrimSpace(string(ppid)), "-o", "args=")
-				pname, err := cmd.Output()
-				if err == nil {
-					if strings.Contains(string(pname), "php-fpm: master process") {
-						if p, err := strconv.ParseInt(strings.TrimSpace(string(ppid)), 10, 64); err == nil {
-							pid = p
-						}
-					}
-				} else {
-					log.Warnf(err.Error()) //improve log msg
-				}
-			} else {
-				log.Warnf(err.Error()) ////improve log msg
-			}
-		}
-	}
 }
