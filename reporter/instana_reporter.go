@@ -44,7 +44,10 @@ func (r *InstanaReporter) ReportHostMetadataBlocking(ctx context.Context, metada
 }
 
 type CallSite struct {
-	File_line   int64  `json:"file_line"`
-	File_name   string `json:"file_name"`
-	Method_name string `json:"method_name"`
+	File_line   int64      `json:"file_line"`
+	File_name   string     `json:"file_name"`
+	Method_name string     `json:"method_name"`
+	Measurement int64      `json:"measurement"`
+	Num_samples int64      `json:"num_samples"`
+	Children    []CallSite `json:"children"`
 }
