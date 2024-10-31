@@ -70,5 +70,12 @@ func (r *InstanaReporter) ExecutableMetadata(_ context.Context,
 func (r *InstanaReporter) ReportTraceEvent(trace *libpf.Trace,
 	timestamp libpf.UnixTime64, comm, podName,
 	containerName, apmServiceName string, pid int64) {
+	traceEvents := r.traceEvents.WLock()
+	defer r.traceEvents.WUnlock(&traceEvents)
 
+	if tr, exists := (*traceEvents)[trace.Hash]; exists {
+		tr.timestamps = append(tr.timestamps, uint64(timestamp))
+		(*traceEvents)[trace.Hash] = tr
+		return
+	}
 }
