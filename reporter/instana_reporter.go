@@ -51,3 +51,10 @@ type CallSite struct {
 	Num_samples int64      `json:"num_samples"`
 	Children    []CallSite `json:"children"`
 }
+
+func (r *InstanaReporter) ReportFallbackSymbol(frameID libpf.FrameID, symbol string) {
+	if _, exists := r.fallbackSymbols.Peek(frameID); exists {
+		return
+	}
+	r.fallbackSymbols.Add(frameID, symbol)
+}
