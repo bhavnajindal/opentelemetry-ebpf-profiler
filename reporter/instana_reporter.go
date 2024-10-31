@@ -2,6 +2,7 @@ package reporter
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"go.opentelemetry.io/ebpf-profiler/libpf"
@@ -77,6 +78,18 @@ func (r *InstanaReporter) ReportTraceEvent(trace *libpf.Trace,
 		tr.timestamps = append(tr.timestamps, uint64(timestamp))
 		(*traceEvents)[trace.Hash] = tr
 		return
+	}
+
+	(*traceEvents)[trace.Hash] = traceFramesCounts{
+		files:          trace.Files,
+		linenos:        trace.Linenos,
+		frameTypes:     trace.FrameTypes,
+		comm:           comm,
+		podName:        podName,
+		containerName:  containerName,
+		apmServiceName: apmServiceName,
+		timestamps:     []uint64{uint64(timestamp)},
+		pid:            strconv.FormatInt(pid, 10),
 	}
 
 }
