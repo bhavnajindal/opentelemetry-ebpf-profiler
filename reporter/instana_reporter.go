@@ -15,3 +15,7 @@ func (r *InstanaReporter) Stop() {
 }
 
 func (r *InstanaReporter) ReportMetrics(timestamp uint32, ids []uint32, values []int64) {}
+
+func (r *InstanaReporter) GetMetrics() Metrics {
+	return Metrics{}
+}
