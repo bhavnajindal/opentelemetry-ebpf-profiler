@@ -1,6 +1,11 @@
 package reporter
 
-import "go.opentelemetry.io/ebpf-profiler/libpf"
+import (
+	"context"
+	"time"
+
+	"go.opentelemetry.io/ebpf-profiler/libpf"
+)
 
 var _ Reporter = (*InstanaReporter)(nil)
 
@@ -31,3 +36,9 @@ func (r *InstanaReporter) SupportsReportTraceEvent() bool { return true }
 func (r *InstanaReporter) ReportFramesForTrace(_ *libpf.Trace) {}
 
 func (r *InstanaReporter) ReportHostMetadata(metadataMap map[string]string) {}
+
+// ReportHostMetadataBlocking sends host metadata to the collection agent.
+func (r *InstanaReporter) ReportHostMetadataBlocking(ctx context.Context, metadataMap map[string]string,
+	maxRetries int, waitRetry time.Duration) error {
+	return nil
+}
