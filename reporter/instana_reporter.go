@@ -66,3 +66,9 @@ func (r *InstanaReporter) ExecutableMetadata(_ context.Context,
 		buildID:  buildID,
 	})
 }
+
+func (r *InstanaReporter) ReportTraceEvent(trace *libpf.Trace,
+	timestamp libpf.UnixTime64, comm, podName,
+	containerName, apmServiceName string, pid int64) {
+
+}
