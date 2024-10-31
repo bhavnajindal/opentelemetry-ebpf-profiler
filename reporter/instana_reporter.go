@@ -25,3 +25,5 @@ func (r *InstanaReporter) GetMetrics() Metrics {
 func (r *InstanaReporter) ReportCountForTrace(_ libpf.TraceHash, _ libpf.UnixTime64,
 	_ uint16, _, _, _, _ string, _ int64) {
 }
+
+func (r *InstanaReporter) SupportsReportTraceEvent() bool { return true }
