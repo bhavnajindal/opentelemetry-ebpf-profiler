@@ -13,3 +13,5 @@ type InstanaReporter struct {
 func (r *InstanaReporter) Stop() {
 	close(r.stopSignal)
 }
+
+func (r *InstanaReporter) ReportMetrics(timestamp uint32, ids []uint32, values []int64) {}
