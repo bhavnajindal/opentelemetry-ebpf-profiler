@@ -58,3 +58,11 @@ func (r *InstanaReporter) ReportFallbackSymbol(frameID libpf.FrameID, symbol str
 	}
 	r.fallbackSymbols.Add(frameID, symbol)
 }
+
+func (r *InstanaReporter) ExecutableMetadata(_ context.Context,
+	fileID libpf.FileID, fileName, buildID string) {
+	r.executables.Add(fileID, execInfo{
+		fileName: fileName,
+		buildID:  buildID,
+	})
+}
