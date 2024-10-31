@@ -29,3 +29,5 @@ func (r *InstanaReporter) ReportCountForTrace(_ libpf.TraceHash, _ libpf.UnixTim
 func (r *InstanaReporter) SupportsReportTraceEvent() bool { return true }
 
 func (r *InstanaReporter) ReportFramesForTrace(_ *libpf.Trace) {}
+
+func (r *InstanaReporter) ReportHostMetadata(metadataMap map[string]string) {}
