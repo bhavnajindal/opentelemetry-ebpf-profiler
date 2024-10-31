@@ -2,9 +2,13 @@ package reporter
 
 import (
 	"context"
+	"fmt"
+	"os/exec"
 	"strconv"
+	"strings"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/ebpf-profiler/libpf"
 )
 
@@ -92,4 +96,25 @@ func (r *InstanaReporter) ReportTraceEvent(trace *libpf.Trace,
 		pid:            strconv.FormatInt(pid, 10),
 	}
 
+}
+
+func getPHPMasterPid(pid string) string {
+	cmd := exec.Command("ps", "-p", strings.TrimSpace(pid), "-o", "ppid=")
+	ppid, err := cmd.Output()
+
+	if err == nil {
+		cmd = exec.Command("ps", "-p", strings.TrimSpace(string(ppid)), "-o", "args=")
+		pname, err := cmd.Output()
+		if err == nil {
+			if strings.Contains(string(pname), "php-fpm: master process") {
+				fmt.Println("put correct pid")
+				return strings.TrimSpace(string(ppid))
+			}
+		} else {
+			log.Warnf("Unable to get PHP-FPM Master process", err.Error()) //improve log msg
+		}
+	} else {
+		log.Warnf("Unable to get parent of PHP-FPM process", err.Error()) ////improve log msg
+	}
+	return pid
 }
