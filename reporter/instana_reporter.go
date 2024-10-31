@@ -9,3 +9,7 @@ type InstanaReporter struct {
 
 	instanaKey string
 }
+
+func (r *InstanaReporter) Stop() {
+	close(r.stopSignal)
+}
