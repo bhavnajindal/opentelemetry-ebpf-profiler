@@ -2,7 +2,10 @@ package reporter
 
 import (
 	"context"
+	"crypto/tls"
+	"errors"
 	"fmt"
+	"net/http"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -117,4 +120,27 @@ func getPHPMasterPid(pid string) string {
 		log.Warnf("Unable to get parent of PHP-FPM process", err.Error()) ////improve log msg
 	}
 	return pid
+}
+
+func getInstanaAgentId() (string, error) {
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
+
+	method := "GET"
+	url := "http://localhost:42699/info"
+
+	req, err := http.NewRequest(method, url, nil)
+	if err != nil {
+		log.Errorf(err.Error())
+		return "", err
+	}
+
+	return "", errors.New("couldn't get Instana agent id")
+
 }
