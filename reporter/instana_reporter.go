@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	lru "github.com/elastic/go-freelru"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/ebpf-profiler/libpf"
 	"golang.org/x/net/http2"
@@ -27,6 +28,12 @@ type InstanaReporter struct {
 	url string
 
 	instanaKey string
+
+	// stopSignal is the stop signal for shutting down all background tasks.
+	stopSignal chan libpf.Void
+
+	// fallbackSymbols keeps track of FrameID to their symbol.
+	fallbackSymbols *lru.SyncedLRU[libpf.FrameID, string]
 }
 
 func (r *InstanaReporter) Stop() {
