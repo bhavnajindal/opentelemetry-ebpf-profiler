@@ -191,3 +191,15 @@ func getInstanaUrl() (string, string, error) {
 
 	return url, instaKey.String(), nil
 }
+
+func (r *InstanaReporter) sendProfileToInstana(ProfilesJsonList []map[string]interface{}) {
+
+	ProfileJsonData, err := json.Marshal(ProfilesJsonList)
+	if err != nil {
+		log.Warnf("could not marshal Json")
+		return
+	}
+
+	//fmt.Println(string(ProfileJsonData))
+
+}
