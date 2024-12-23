@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os/exec"
 	"strconv"
@@ -231,4 +232,11 @@ func (r *InstanaReporter) sendProfileToInstana(ProfilesJsonList []map[string]int
 	}
 	defer res.Body.Close()
 
+	_, err = ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Warnf(err.Error())
+		return
+	}
+	//fmt.Println("response status:", res.Status)
+	//fmt.Println(string(body))
 }
