@@ -221,5 +221,14 @@ func (r *InstanaReporter) sendProfileToInstana(ProfilesJsonList []map[string]int
 	}
 	req.Header.Add("x-instana-key", r.instanaKey)
 	req.Header.Add("x-instana-host", r.agentId)
+	req.Header.Add("x-instana-time", strconv.FormatInt(time.Now().UnixMilli(), 10))
+	req.Header.Add("Content-Type", "application/json")
+
+	res, err := client.Do(req)
+	if err != nil {
+		log.Warnf(err.Error())
+		return
+	}
+	defer res.Body.Close()
 
 }
