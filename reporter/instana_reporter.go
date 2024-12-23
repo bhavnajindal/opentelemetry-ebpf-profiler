@@ -3,6 +3,7 @@ package reporter
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -139,6 +140,26 @@ func getInstanaAgentId() (string, error) {
 	if err != nil {
 		log.Errorf(err.Error())
 		return "", err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Warnf(err.Error())
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	var agentData interface{}
+	err = json.NewDecoder(resp.Body).Decode(&agentData)
+	if err != nil {
+		log.Errorf(err.Error())
+		return "", err
+	}
+
+	if agentInfo, ok := agentData.(map[string]interface{}); ok {
+		if id, ok := agentInfo["agent-id"].(string); ok {
+			return id, nil
+		}
 	}
 
 	return "", errors.New("couldn't get Instana agent id")
