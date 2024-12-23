@@ -1,6 +1,7 @@
 package reporter
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
@@ -14,6 +15,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/ebpf-profiler/libpf"
+	"golang.org/x/net/http2"
 )
 
 var _ Reporter = (*InstanaReporter)(nil)
@@ -201,5 +203,16 @@ func (r *InstanaReporter) sendProfileToInstana(ProfilesJsonList []map[string]int
 	}
 
 	//fmt.Println(string(ProfileJsonData))
+
+	method := "POST"
+
+	client := &http.Client{
+		Transport: &http2.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
+	req, err := http.NewRequest(method, r.url, bytes.NewBuffer(ProfileJsonData))
 
 }
