@@ -253,6 +253,8 @@ func StartInstanaReporting(mainCtx context.Context, cfg *Config) (Reporter, erro
 		stopSignal: make(chan libpf.Void),
 	}
 
+	ctx, cancelReporting := context.WithCancel(mainCtx)
+
 	go func() {
 		<-r.stopSignal
 		cancelReporting()
