@@ -2,7 +2,11 @@ package reporter
 
 import (
 	"context"
+	"crypto/tls"
+	"encoding/json"
+	"errors"
 	"fmt"
+	"net/http"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -117,4 +121,73 @@ func getPHPMasterPid(pid string) string {
 		log.Warnf("Unable to get parent of PHP-FPM process", err.Error()) ////improve log msg
 	}
 	return pid
+}
+
+func getInstanaAgentId() (string, error) {
+
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
+
+	method := "GET"
+	url := "http://localhost:42699/info"
+
+	req, err := http.NewRequest(method, url, nil)
+	if err != nil {
+		log.Errorf(err.Error())
+		return "", err
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Warnf(err.Error())
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	var agentData interface{}
+	err = json.NewDecoder(resp.Body).Decode(&agentData)
+	if err != nil {
+		log.Errorf(err.Error())
+		return "", err
+	}
+
+	if agentInfo, ok := agentData.(map[string]interface{}); ok {
+		if id, ok := agentInfo["agent-id"].(string); ok {
+			return id, nil
+		}
+	}
+
+	return "", errors.New("couldn't get Instana agent id")
+
+}
+
+func getInstanaUrl() (string, string, error) {
+	cfg, err := ini.Load("/opt/instana/agent/etc/instana/com.instana.agent.main.sender.Backend.cfg")
+	if err != nil {
+		return "", "", err //Add more log here
+	}
+
+	host := cfg.Section("").Key("host")
+	if host == nil {
+		return "", "", errors.New("couldn't get Instana host")
+	}
+	port := cfg.Section("").Key("port")
+	if port == nil {
+		return "", "", errors.New("couldn't get Instana Port")
+	}
+	instaKey := cfg.Section("").Key("key")
+	if instaKey == nil {
+		return "", "", errors.New("couldn't get Instana Key")
+	}
+
+	url := "https://" + host.String() + ":" + port.String() + "/profiles"
+
+	//fmt.Println("url and key", url, instaKey)
+
+	return url, instaKey.String(), nil
 }
