@@ -1,11 +1,13 @@
 package reporter
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os/exec"
 	"strconv"
@@ -14,6 +16,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/ebpf-profiler/libpf"
+	"golang.org/x/net/http2"
 )
 
 var _ Reporter = (*InstanaReporter)(nil)
@@ -190,4 +193,50 @@ func getInstanaUrl() (string, string, error) {
 	//fmt.Println("url and key", url, instaKey)
 
 	return url, instaKey.String(), nil
+}
+
+func (r *InstanaReporter) sendProfileToInstana(ProfilesJsonList []map[string]interface{}) {
+
+	ProfileJsonData, err := json.Marshal(ProfilesJsonList)
+	if err != nil {
+		log.Warnf("could not marshal Json")
+		return
+	}
+
+	//fmt.Println(string(ProfileJsonData))
+
+	method := "POST"
+
+	client := &http.Client{
+		Transport: &http2.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		},
+	}
+	req, err := http.NewRequest(method, r.url, bytes.NewBuffer(ProfileJsonData))
+
+	if err != nil {
+		log.Warnf(err.Error())
+		return
+	}
+	req.Header.Add("x-instana-key", r.instanaKey)
+	req.Header.Add("x-instana-host", r.agentId)
+	req.Header.Add("x-instana-time", strconv.FormatInt(time.Now().UnixMilli(), 10))
+	req.Header.Add("Content-Type", "application/json")
+
+	res, err := client.Do(req)
+	if err != nil {
+		log.Warnf(err.Error())
+		return
+	}
+	defer res.Body.Close()
+
+	_, err = ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Warnf(err.Error())
+		return
+	}
+	//fmt.Println("response status:", res.Status)
+	//fmt.Println(string(body))
 }
