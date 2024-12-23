@@ -180,5 +180,14 @@ func getInstanaUrl() (string, string, error) {
 	if port == nil {
 		return "", "", errors.New("couldn't get Instana Port")
 	}
+	instaKey := cfg.Section("").Key("key")
+	if instaKey == nil {
+		return "", "", errors.New("couldn't get Instana Key")
+	}
 
+	url := "https://" + host.String() + ":" + port.String() + "/profiles"
+
+	//fmt.Println("url and key", url, instaKey)
+
+	return url, instaKey.String(), nil
 }
