@@ -249,8 +249,15 @@ func (r *InstanaReporter) sendProfileToInstana(ProfilesJsonList []map[string]int
 }
 
 func StartInstanaReporting(mainCtx context.Context, cfg *Config) (Reporter, error) {
+	cacheSize := config.TraceCacheEntries()
+	fallbackSymbols, err := lru.NewSynced[libpf.FrameID, string](cacheSize, libpf.FrameID.Hash32)
+	if err != nil {
+		return nil, err
+	}
+
 	r := &InstanaReporter{
-		stopSignal: make(chan libpf.Void),
+		stopSignal:      make(chan libpf.Void),
+		fallbackSymbols: fallbackSymbols,
 	}
 
 	ctx, cancelReporting := context.WithCancel(mainCtx)
