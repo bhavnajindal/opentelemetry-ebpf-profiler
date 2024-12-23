@@ -165,3 +165,16 @@ func getInstanaAgentId() (string, error) {
 	return "", errors.New("couldn't get Instana agent id")
 
 }
+
+func getInstanaUrl() (string, string, error) {
+	cfg, err := ini.Load("/opt/instana/agent/etc/instana/com.instana.agent.main.sender.Backend.cfg")
+	if err != nil {
+		return "", "", err //Add more log here
+	}
+
+	host := cfg.Section("").Key("host")
+	if host == nil {
+		return "", "", errors.New("couldn't get Instana host")
+	}
+
+}
