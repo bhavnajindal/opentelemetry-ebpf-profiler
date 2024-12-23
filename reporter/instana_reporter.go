@@ -176,5 +176,9 @@ func getInstanaUrl() (string, string, error) {
 	if host == nil {
 		return "", "", errors.New("couldn't get Instana host")
 	}
+	port := cfg.Section("").Key("port")
+	if port == nil {
+		return "", "", errors.New("couldn't get Instana Port")
+	}
 
 }
