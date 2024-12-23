@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	lru "github.com/elastic/go-freelru"
 	log "github.com/sirupsen/logrus"
 	"go.opentelemetry.io/ebpf-profiler/libpf"
 	"golang.org/x/net/http2"
@@ -27,6 +28,12 @@ type InstanaReporter struct {
 	url string
 
 	instanaKey string
+
+	// stopSignal is the stop signal for shutting down all background tasks.
+	stopSignal chan libpf.Void
+
+	// fallbackSymbols keeps track of FrameID to their symbol.
+	fallbackSymbols *lru.SyncedLRU[libpf.FrameID, string]
 }
 
 func (r *InstanaReporter) Stop() {
@@ -239,4 +246,26 @@ func (r *InstanaReporter) sendProfileToInstana(ProfilesJsonList []map[string]int
 	}
 	//fmt.Println("response status:", res.Status)
 	//fmt.Println(string(body))
+}
+
+func StartInstanaReporting(mainCtx context.Context, cfg *Config) (Reporter, error) {
+	cacheSize := config.TraceCacheEntries()
+	fallbackSymbols, err := lru.NewSynced[libpf.FrameID, string](cacheSize, libpf.FrameID.Hash32)
+	if err != nil {
+		return nil, err
+	}
+
+	r := &InstanaReporter{
+		stopSignal:      make(chan libpf.Void),
+		fallbackSymbols: fallbackSymbols,
+	}
+
+	ctx, cancelReporting := context.WithCancel(mainCtx)
+
+	go func() {
+		<-r.stopSignal
+		cancelReporting()
+	}()
+
+	return r, nil
 }
