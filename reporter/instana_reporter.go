@@ -247,3 +247,16 @@ func (r *InstanaReporter) sendProfileToInstana(ProfilesJsonList []map[string]int
 	//fmt.Println("response status:", res.Status)
 	//fmt.Println(string(body))
 }
+
+func StartInstanaReporting(mainCtx context.Context, cfg *Config) (Reporter, error) {
+	r := &InstanaReporter{
+		stopSignal: make(chan libpf.Void),
+	}
+
+	go func() {
+		<-r.stopSignal
+		cancelReporting()
+	}()
+
+	return r, nil
+}
