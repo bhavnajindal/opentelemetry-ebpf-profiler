@@ -215,4 +215,11 @@ func (r *InstanaReporter) sendProfileToInstana(ProfilesJsonList []map[string]int
 	}
 	req, err := http.NewRequest(method, r.url, bytes.NewBuffer(ProfileJsonData))
 
+	if err != nil {
+		log.Warnf(err.Error())
+		return
+	}
+	req.Header.Add("x-instana-key", r.instanaKey)
+	req.Header.Add("x-instana-host", r.agentId)
+
 }
